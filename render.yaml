@@ -26,10 +26,6 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
-    disk:
-      name: devapi-data
-      mountPath: /app/data
-      sizeGB: 1
     autoDeploy: true
 
   - type: web
@@ -45,10 +41,6 @@ services:
         value: sqlite:///data/verifier_receipts.db
       - key: RATE_LIMIT_STORAGE
         value: rediss://securewipe-redis:6379
-    disk:
-      name: verifier-data
-      mountPath: /app/data
-      sizeGB: 1
     autoDeploy: true
 
   - type: web
