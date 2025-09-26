@@ -1,0 +1,11 @@
+Flask
+PyJWT
+flask-limiter
+SQLAlchemy
+cryptography
+reportlab
+qrcode
+Pillow
+requests
+redis>=4.0.0
+

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: securewipe-devapi
+    env: docker
+    plan: starter
+    repo: "<your-github-repo>"
+    dockerfilePath: ./devapi.Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: DEV_API_JWT_SECRET
+      - key: VERIFIER_API_KEY
+      - key: SMTP_USER
+      - key: SMTP_PASS
+
+  - type: web
+    name: securewipe-verifier
+    env: docker
+    plan: starter
+    repo: "<your-github-repo>"
+    dockerfilePath: ./verifier.Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: VERIFIER_API_KEY
