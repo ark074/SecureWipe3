@@ -3,21 +3,64 @@ services:
     name: securewipe-devapi
     env: docker
     plan: starter
-    repo: "<your-github-repo>"
     dockerfilePath: ./devapi.Dockerfile
-    autoDeploy: true
+    dockerContext: .
     envVars:
       - key: DEV_API_JWT_SECRET
-      - key: VERIFIER_API_KEY
+        sync: false
+      - key: SECUREWIPE_OPERATOR_PIN
+        sync: false
+      - key: VERIFIER_DB_URL
+        value: sqlite:///data/verifier_receipts.db
+      - key: SIGNING_KEY_PATH
+        value: /app/private_prod.pem
+      - key: RATE_LIMIT_STORAGE
+        value: rediss://securewipe-redis:6379
+      - key: SMTP_SERVER
+        sync: false
+      - key: SMTP_PORT
+        sync: false
       - key: SMTP_USER
+        sync: false
       - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+    disk:
+      name: devapi-data
+      mountPath: /app/data
+      sizeGB: 1
+    autoDeploy: true
 
   - type: web
     name: securewipe-verifier
     env: docker
     plan: starter
-    repo: "<your-github-repo>"
     dockerfilePath: ./verifier.Dockerfile
-    autoDeploy: true
+    dockerContext: .
     envVars:
       - key: VERIFIER_API_KEY
+        sync: false
+      - key: VERIFIER_DB_URL
+        value: sqlite:///data/verifier_receipts.db
+      - key: RATE_LIMIT_STORAGE
+        value: rediss://securewipe-redis:6379
+    disk:
+      name: verifier-data
+      mountPath: /app/data
+      sizeGB: 1
+    autoDeploy: true
+
+  - type: web
+    name: securewipe-frontend
+    env: docker
+    plan: starter
+    dockerfilePath: ./docker/nginx.Dockerfile
+    dockerContext: .
+    envVars: []
+    autoDeploy: true
+
+  - type: redis
+    name: securewipe-redis
+    ipAllowList: [] # allow all internal services
+    plan: free
