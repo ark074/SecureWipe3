@@ -2,7 +2,7 @@ services:
   - type: web
     name: securewipe-devapi
     env: docker
-    plan: starter
+    plan: free
     dockerfilePath: ./devapi.Dockerfile
     dockerContext: .
     envVars:
@@ -35,7 +35,7 @@ services:
   - type: web
     name: securewipe-verifier
     env: docker
-    plan: starter
+    plan: free
     dockerfilePath: ./verifier.Dockerfile
     dockerContext: .
     envVars:
@@ -54,7 +54,7 @@ services:
   - type: web
     name: securewipe-frontend
     env: docker
-    plan: starter
+    plan: free
     dockerfilePath: ./docker/nginx.Dockerfile
     dockerContext: .
     envVars: []
