@@ -1,55 +1,66 @@
 services:
-  devapi:
-    build:
-      context: .
-      dockerfile: devapi.Dockerfile
-    container_name: securewipe-devapi
-    restart: unless-stopped
-    ports:
-      - "5001:5001"
-    env_file:
-      - .env
-    depends_on:
-      - redis
-    volumes:
-      - ./tools:/app/tools:ro
-      - ./data:/app/data
-      - ./private_prod.pem:/app/private_prod.pem:ro
+  - type: web
+    name: securewipe-devapi
+    env: docker
+    plan: starter
+    dockerfilePath: ./devapi.Dockerfile
+    dockerContext: .
+    envVars:
+      - key: DEV_API_JWT_SECRET
+        sync: false
+      - key: SECUREWIPE_OPERATOR_PIN
+        sync: false
+      - key: VERIFIER_DB_URL
+        value: sqlite:///data/verifier_receipts.db
+      - key: SIGNING_KEY_PATH
+        value: /app/private_prod.pem
+      - key: RATE_LIMIT_STORAGE
+        value: rediss://securewipe-redis:6379
+      - key: SMTP_SERVER
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+    disk:
+      name: devapi-data
+      mountPath: /app/data
+      sizeGB: 1
+    autoDeploy: true
 
-  verifier:
-    build:
-      context: .
-      dockerfile: verifier.Dockerfile
-    container_name: securewipe-verifier
-    restart: unless-stopped
-    ports:
-      - "5000:5000"
-    env_file:
-      - .env
-    depends_on:
-      - redis
-    volumes:
-      - ./verifier:/app/verifier:ro
-      - ./data:/app/data
-      - ./public.pem:/app/public.pem:ro
+  - type: web
+    name: securewipe-verifier
+    env: docker
+    plan: starter
+    dockerfilePath: ./verifier.Dockerfile
+    dockerContext: .
+    envVars:
+      - key: VERIFIER_API_KEY
+        sync: false
+      - key: VERIFIER_DB_URL
+        value: sqlite:///data/verifier_receipts.db
+      - key: RATE_LIMIT_STORAGE
+        value: rediss://securewipe-redis:6379
+    disk:
+      name: verifier-data
+      mountPath: /app/data
+      sizeGB: 1
+    autoDeploy: true
 
-  nginx:
-    image: nginx:stable
-    container_name: securewipe-nginx
-    restart: unless-stopped
-    depends_on:
-      - devapi
-      - verifier
-    ports:
-      - "443:443"
-    volumes:
-      - ./frontend:/usr/share/nginx/html:ro
-      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./certs:/etc/nginx/certs:ro
+  - type: web
+    name: securewipe-frontend
+    env: docker
+    plan: starter
+    dockerfilePath: ./docker/nginx.Dockerfile
+    dockerContext: .
+    envVars: []
+    autoDeploy: true
 
-  redis:
-    image: redis:7-alpine
-    container_name: securewipe-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
+  - type: redis
+    name: securewipe-redis
+    ipAllowList: [] # allow all internal services
+    plan: free
