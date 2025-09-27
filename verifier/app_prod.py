@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-import os
-import json
-import logging
+import os, json, logging
 from flask import Flask, request, jsonify, send_file
 from functools import wraps
 from cryptography.hazmat.primitives import serialization, hashes
@@ -9,8 +7,8 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends import default_backend
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from mongoengine import connect, Document, StringField, DateTimeField, IntField
-from datetime import datetime
+from mongoengine import connect
+from verifier.models import Receipt
 
 # --- Logging ---
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -20,32 +18,16 @@ logger = logging.getLogger("verifier_prod")
 app = Flask(__name__)
 
 # --- Environment Variables ---
-DATABASE_URL = os.environ.get(
-    "VERIFIER_DB_URL",
-    "mongodb://localhost:27017/securewipe"  # fallback for local dev
-)
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/securewipe")
 VERIFIER_API_KEY = os.environ.get("VERIFIER_API_KEY", "changeme")
 VERIFIER_PUBKEY_PATH = os.environ.get("VERIFIER_PUBKEY_PATH", "/app/public.pem")
 RATE_LIMIT_STORAGE = os.environ.get("VERIFIER_RATE_LIMIT_STORAGE", "redis://securewipe-redis:6379/0")
 RATE_LIMIT_DEFAULT = os.environ.get("VERIFIER_RATE_LIMIT", "60 per minute")
 
-# --- Database Setup ---
-try:
-    connect(host=DATABASE_URL)
-    logger.info(f"Connected to MongoDB at {DATABASE_URL}")
-except Exception as e:
-    logger.error(f"Failed to connect to MongoDB: {e}")
-    raise
+# --- MongoDB Setup ---
+connect(host=MONGO_URI)
 
-# --- Models (MongoEngine) ---
-class Receipt(Document):
-    meta = {"collection": "receipts"}
-    id = IntField(primary_key=True)
-    job_id = StringField(required=True)
-    pdf_path = StringField(required=True)
-    created_at = DateTimeField(default=datetime.utcnow)
-
-# --- Limiter Setup (with Redis fallback) ---
+# --- Limiter Setup ---
 def pick_rate_limit_storage():
     try:
         if RATE_LIMIT_STORAGE.startswith("redis://"):
@@ -85,10 +67,10 @@ def require_api_key(f):
 def healthz():
     return jsonify({"status": "ok"})
 
-@app.route("/receipts/<int:rid>.pdf", methods=["GET"])
+@app.route("/receipts/<string:rid>.pdf", methods=["GET"])
 @require_api_key
 def get_receipt_pdf(rid):
-    r = Receipt.objects(id=rid).first()
+    r = Receipt.objects(job_id=rid).first()  # you can also use id=rid if you prefer int IDs
     if not r or not r.pdf_path:
         return jsonify({"error": "not_found"}), 404
     if not os.path.exists(r.pdf_path):
