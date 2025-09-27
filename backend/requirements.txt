@@ -1,11 +1,11 @@
 Flask
 PyJWT
 flask-limiter
-SQLAlchemy
 cryptography
 reportlab
 qrcode
 Pillow
 requests
 redis>=4.0.0
-
+mongoengine==0.27.0
+pymongo>=4.7.0
