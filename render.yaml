@@ -38,7 +38,7 @@ services:
       - key: VERIFIER_API_KEY
         sync: false
       - key: VERIFIER_DB_URL
-        value: sqlite:///data/verifier_receipts.db
+        value: mongodb+srv://ark074:Ranjith1975@cluster0.phzrkdw.mongodb.net/securewipe?retryWrites=true&w=majority&appName=Cluster0
       - key: RATE_LIMIT_STORAGE
         value: rediss://securewipe-redis:6379
     autoDeploy: true
@@ -54,5 +54,5 @@ services:
 
   - type: redis
     name: securewipe-redis
-    ipAllowList: [] # allow all internal services
+    ipAllowList: []
     plan: free
