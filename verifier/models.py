@@ -1,19 +1,18 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text
-from sqlalchemy.ext.declarative import declarative_base
+from mongoengine import Document, StringField, DateTimeField, IntField, DictField
 import datetime
-Base = declarative_base()
 
-class Receipt(Base):
-    __tablename__ = 'receipts'
-    id = Column(Integer, primary_key=True)
-    job_id = Column(String(128), nullable=False, unique=True)
-    operator = Column(String(128))
-    device = Column(Text)
-    method = Column(String(64))
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
-    signature = Column(Text)
-    signed_json = Column(Text)
-    raw_payload = Column(Text)
-    pdf_path = Column(String(512))
-    status = Column(String(32), default='created')
-    email = Column(String(256))
+class Receipt(Document):
+    meta = {"collection": "receipts"}
+    
+    id = IntField(primary_key=True)
+    job_id = StringField(required=True, unique=True, max_length=128)
+    operator = StringField(max_length=128)
+    device = StringField()  # Text -> just use StringField (MongoDB supports large strings)
+    method = StringField(max_length=64)
+    timestamp = DateTimeField(default=datetime.datetime.utcnow)
+    signature = StringField()
+    signed_json = StringField()
+    raw_payload = StringField()
+    pdf_path = StringField(max_length=512)
+    status = StringField(default="created", max_length=32)
+    email = StringField(max_length=256)
