@@ -8,5 +8,4 @@ Pillow
 requests
 redis>=4.0.0
 mongoengine==0.27.0
-pymongo>=4.7.0
-sqlalchemy
+pymongo==4.6.3
