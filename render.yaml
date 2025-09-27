@@ -10,7 +10,7 @@ services:
         sync: false
       - key: SECUREWIPE_OPERATOR_PIN
         sync: false
-      - key: VERIFIER_DB_URL
+      - key: MONGO_URI
         value: mongodb+srv://ark074:Ranjith1975@cluster0.phzrkdw.mongodb.net/securewipe?retryWrites=true&w=majority&appName=Cluster0
       - key: SIGNING_KEY_PATH
         value: /app/private_prod.pem
